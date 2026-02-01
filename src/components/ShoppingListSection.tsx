@@ -55,8 +55,9 @@ export function ShoppingListSection({
 
   return (
     <View style={styles.container}>
+      <Text style={styles.sectionHeadline}>Shopping List</Text>
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
+        {recipeName ? <Text style={styles.title}>{recipeName}</Text> : null}
         <View style={styles.actions}>
           <TouchableOpacity style={styles.actionButton} onPress={handleCopy}>
             <Text style={styles.actionText}>Copy</Text>
@@ -112,6 +113,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
     paddingHorizontal: spacing.lg,
   },
+  sectionHeadline: {
+    ...typography.h2,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -121,9 +127,12 @@ const styles = StyleSheet.create({
   title: {
     ...typography.h2,
     color: colors.textPrimary,
+    flex: 1,
+    marginRight: spacing.sm,
   },
   actions: {
     flexDirection: 'row',
+    flexShrink: 0,
     gap: spacing.sm,
   },
   actionButton: {

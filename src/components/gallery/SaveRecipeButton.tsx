@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -110,9 +110,9 @@ export function SaveRecipeButton({ results }: SaveRecipeButtonProps) {
 
   const isDisabled = saved || alreadySaved;
   const label = alreadySaved
-    ? 'Already Saved'
+    ? 'Saved'
     : saved
-      ? 'Saved!'
+      ? 'Saved'
       : saving
         ? 'Saving...'
         : 'Save to Gallery';
@@ -126,11 +126,15 @@ export function SaveRecipeButton({ results }: SaveRecipeButtonProps) {
         disabled={isDisabled || saving}
         activeOpacity={0.8}
       >
-        <Ionicons
-          name={iconName}
-          size={20}
-          color={isDisabled ? colors.primary : colors.white}
-        />
+        {saving ? (
+          <ActivityIndicator size="small" color={colors.white} />
+        ) : (
+          <Ionicons
+            name={iconName}
+            size={20}
+            color={isDisabled ? colors.primary : colors.white}
+          />
+        )}
         <Text style={[styles.label, isDisabled && styles.labelDisabled]}>
           {label}
         </Text>

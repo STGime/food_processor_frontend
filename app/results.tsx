@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography, spacing, layout } from '../src/theme';
 import { getJobResults } from '../src/api/extract';
 import { useExtractionStore } from '../src/store/extractionStore';
@@ -27,6 +28,7 @@ export default function ResultsScreen() {
   const [loading, setLoading] = useState(!results);
   const [error, setError] = useState<string | null>(null);
   const [paywallVisible, setPaywallVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (results || !jobId) return;
@@ -95,6 +97,9 @@ export default function ResultsScreen() {
       >
         {/* Summary header */}
         <View style={styles.summaryHeader}>
+          {results.recipe_name ? (
+            <Text style={styles.recipeName}>{results.recipe_name}</Text>
+          ) : null}
           <Text style={styles.summaryText}>
             {is_truncated
               ? `Showing ${shown_ingredient_count} of ${total_ingredient_count} ingredients`
@@ -144,12 +149,12 @@ export default function ResultsScreen() {
           isTruncated={is_truncated}
           recipeName={results.recipe_name}
         />
-
-        {/* Save to gallery */}
-        <View style={styles.saveButtonContainer}>
-          <SaveRecipeButton results={results} />
-        </View>
       </ScrollView>
+
+      {/* Fixed save button at bottom */}
+      <View style={[styles.saveButtonContainer, { paddingBottom: Math.max(insets.bottom, spacing.md) + spacing.md }]}>
+        <SaveRecipeButton results={results} />
+      </View>
 
       <PaywallModal
         visible={paywallVisible}
@@ -166,7 +171,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: layout.pagePadding,
-    paddingBottom: 40,
+    paddingBottom: spacing.xl,
   },
   loadingContainer: {
     flex: 1,
@@ -189,9 +194,14 @@ const styles = StyleSheet.create({
   summaryHeader: {
     marginBottom: spacing.lg,
   },
-  summaryText: {
+  recipeName: {
     ...typography.h2,
     color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  summaryText: {
+    ...typography.body,
+    color: colors.textSecondary,
   },
   upgradeHint: {
     ...typography.small,
@@ -208,6 +218,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   saveButtonContainer: {
-    marginTop: spacing.xl,
+    paddingHorizontal: layout.pagePadding,
+    paddingTop: spacing.md,
+    backgroundColor: colors.background,
+    borderTopWidth: 1,
+    borderTopColor: colors.divider,
   },
 });

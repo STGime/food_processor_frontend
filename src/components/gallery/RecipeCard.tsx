@@ -7,7 +7,9 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
   useSharedValue,
@@ -86,6 +88,18 @@ export function RecipeCard({ card, isPremium, onDelete, onUpgrade }: RecipeCardP
           </Text>
         </LinearGradient>
       </View>
+
+      {/* Video link */}
+      {card.video_id ? (
+        <TouchableOpacity
+          style={styles.videoLink}
+          onPress={() => Linking.openURL(`https://www.youtube.com/watch?v=${card.video_id}`)}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="logo-youtube" size={16} color={colors.error} />
+          <Text style={styles.videoLinkText} numberOfLines={1}>Watch original video</Text>
+        </TouchableOpacity>
+      ) : null}
 
       {/* Ingredients section */}
       <ScrollView
@@ -183,6 +197,20 @@ const styles = StyleSheet.create({
     ...typography.h2,
     color: colors.white,
     fontSize: 20,
+  },
+  videoLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+  videoLinkText: {
+    ...typography.small,
+    color: colors.primary,
+    fontWeight: '500',
   },
   ingredientsSection: {
     flex: 1,
