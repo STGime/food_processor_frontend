@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'FoodProcessor',
   slug: 'food-processor',
-  version: '1.0.0',
+  version: '1.1.1',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'foodprocessor',
@@ -59,14 +59,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         androidIntentFilters: ['text/*'],
       },
     ],
-    'react-native-iap',
   ],
   experiments: {
     typedRoutes: true,
   },
   extra: {
     eas: {
-      projectId: '', // Fill after running eas init
+      projectId: '78234b64-dea8-402c-9f1d-d5679e9bbea5',
     },
   },
 });

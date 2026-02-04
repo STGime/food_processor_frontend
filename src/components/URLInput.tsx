@@ -31,6 +31,7 @@ export function URLInput({ value, onChangeText }: URLInputProps) {
         placeholderTextColor={colors.textSecondary}
         value={value}
         onChangeText={onChangeText}
+        onEndEditing={(e) => onChangeText(e.nativeEvent.text)}
         autoCapitalize="none"
         autoCorrect={false}
         keyboardType="url"

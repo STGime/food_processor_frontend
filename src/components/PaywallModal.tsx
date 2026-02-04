@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,11 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors, typography, spacing, layout } from '../theme';
-import { useIAP } from '../hooks/useIAP';
+import { useIAP, type PlanType } from '../hooks/useIAP';
 
 interface PaywallModalProps {
   visible: boolean;
@@ -24,8 +25,13 @@ const features = [
 ];
 
 export function PaywallModal({ visible, onClose }: PaywallModalProps) {
-  const { localizedPrice, purchasing, error, purchase, restore } = useIAP();
+  const { monthlyPackage, yearlyPackage, purchasing, error, purchase, restore } =
+    useIAP();
   const router = useRouter();
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>('yearly');
+
+  const monthlyPrice = monthlyPackage?.product.priceString ?? null;
+  const yearlyPrice = yearlyPackage?.product.priceString ?? null;
 
   return (
     <Modal
@@ -59,23 +65,84 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             ))}
           </View>
 
-          {localizedPrice && (
-            <Text style={styles.price}>
-              Premium: {localizedPrice} (one-time)
-            </Text>
-          )}
+          {/* Plan cards */}
+          <View style={styles.planCards}>
+            {yearlyPackage && (
+              <TouchableOpacity
+                style={[
+                  styles.planCard,
+                  selectedPlan === 'yearly' && styles.planCardSelected,
+                ]}
+                onPress={() => setSelectedPlan('yearly')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.planCardHeader}>
+                  <Text
+                    style={[
+                      styles.planName,
+                      selectedPlan === 'yearly' && styles.planNameSelected,
+                    ]}
+                  >
+                    Yearly
+                  </Text>
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>2 months free</Text>
+                  </View>
+                </View>
+                <Text
+                  style={[
+                    styles.planPrice,
+                    selectedPlan === 'yearly' && styles.planPriceSelected,
+                  ]}
+                >
+                  {yearlyPrice}/year
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {monthlyPackage && (
+              <TouchableOpacity
+                style={[
+                  styles.planCard,
+                  selectedPlan === 'monthly' && styles.planCardSelected,
+                ]}
+                onPress={() => setSelectedPlan('monthly')}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.planName,
+                    selectedPlan === 'monthly' && styles.planNameSelected,
+                  ]}
+                >
+                  Monthly
+                </Text>
+                <Text
+                  style={[
+                    styles.planPrice,
+                    selectedPlan === 'monthly' && styles.planPriceSelected,
+                  ]}
+                >
+                  {monthlyPrice}/month
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
           {error && <Text style={styles.error}>{error}</Text>}
 
           <TouchableOpacity
-            style={styles.purchaseButton}
-            onPress={purchase}
+            style={[
+              styles.purchaseButton,
+              purchasing && styles.purchaseButtonDisabled,
+            ]}
+            onPress={() => purchase(selectedPlan)}
             disabled={purchasing}
           >
             {purchasing ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Text style={styles.purchaseButtonText}>Upgrade now</Text>
+              <Text style={styles.purchaseButtonText}>Subscribe now</Text>
             )}
           </TouchableOpacity>
 
@@ -83,8 +150,16 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
             <Text style={styles.restoreText}>Restore purchase</Text>
           </TouchableOpacity>
 
+          <Text style={styles.disclosureText}>
+            Payment will be charged to your{' '}
+            {Platform.OS === 'ios' ? 'App Store' : 'Google Play'} account at
+            confirmation of purchase. Subscription automatically renews unless
+            cancelled at least 24 hours before the end of the current period.
+            Manage or cancel anytime in your device's subscription settings.
+          </Text>
+
           <Text style={styles.legalText}>
-            By upgrading you agree to our{' '}
+            By subscribing you agree to our{' '}
             <Text
               style={styles.legalLink}
               onPress={() => {
@@ -177,11 +252,53 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     flex: 1,
   },
-  price: {
+  planCards: {
+    alignSelf: 'stretch',
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  planCard: {
+    borderWidth: 2,
+    borderColor: colors.divider,
+    borderRadius: layout.cardRadius,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+  },
+  planCardSelected: {
+    borderColor: colors.primary,
+    backgroundColor: '#F0FDF4',
+  },
+  planCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  planName: {
     ...typography.h2,
     color: colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: spacing.xl,
+  },
+  planNameSelected: {
+    color: colors.primaryDark,
+  },
+  planPrice: {
+    ...typography.body,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  planPriceSelected: {
+    color: colors.textPrimary,
+  },
+  badge: {
+    backgroundColor: colors.accent,
+    borderRadius: 8,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  badgeText: {
+    ...typography.small,
+    color: colors.white,
+    fontWeight: '700',
+    fontSize: 11,
   },
   error: {
     ...typography.small,
@@ -198,18 +315,29 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     marginBottom: spacing.lg,
   },
+  purchaseButtonDisabled: {
+    opacity: 0.7,
+  },
   purchaseButtonText: {
     ...typography.button,
     color: colors.white,
   },
   restoreButton: {
     paddingVertical: spacing.sm,
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
   },
   restoreText: {
     ...typography.small,
     color: colors.textSecondary,
     textDecorationLine: 'underline',
+  },
+  disclosureText: {
+    ...typography.small,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: spacing.md,
+    fontSize: 11,
   },
   legalText: {
     ...typography.small,

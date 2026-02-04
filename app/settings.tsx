@@ -1,31 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Alert, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Linking, Platform, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
-import { colors, typography, spacing, layout } from '../src/theme';
+import { colors, layout } from '../src/theme';
 import { SettingsRow } from '../src/components/SettingsRow';
 import { useDeviceStore } from '../src/store/deviceStore';
 import { useIAP } from '../src/hooks/useIAP';
-import { getDeviceMe } from '../src/api/devices';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { isPremium, setIsPremium } = useDeviceStore();
+  const isPremium = useDeviceStore((s) => s.isPremium);
   const { restore } = useIAP();
   const [restoring, setRestoring] = useState(false);
-
-  // Refresh premium status from backend
-  useEffect(() => {
-    async function refresh() {
-      try {
-        const me = await getDeviceMe();
-        setIsPremium(me.is_premium);
-      } catch {
-        // silently fail
-      }
-    }
-    refresh();
-  }, []);
 
   const handleRestore = async () => {
     setRestoring(true);
@@ -36,6 +22,18 @@ export default function SettingsScreen() {
       Alert.alert('Purchase restored', 'Your premium access has been restored.');
     } else {
       Alert.alert('No purchases found', 'We could not find any previous purchases.');
+    }
+  };
+
+  const handleManageSubscription = () => {
+    const url = Platform.select({
+      ios: 'https://apps.apple.com/account/subscriptions',
+      android:
+        'https://play.google.com/store/account/subscriptions?package=com.foodprocessor.app',
+      default: undefined,
+    });
+    if (url) {
+      Linking.openURL(url);
     }
   };
 
@@ -50,10 +48,18 @@ export default function SettingsScreen() {
         label="Premium Status"
         subtitle={
           isPremium
-            ? 'Current plan: Premium — Unlimited ingredients.'
+            ? 'Active subscription'
             : 'Current plan: Free — Up to 5 ingredients per recipe.'
         }
       />
+
+      {isPremium && (
+        <SettingsRow
+          label="Manage Subscription"
+          subtitle="Change or cancel your plan"
+          onPress={handleManageSubscription}
+        />
+      )}
 
       <SettingsRow
         label="Restore Purchase"

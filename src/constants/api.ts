@@ -10,7 +10,6 @@ export const endpoints = {
   extract: '/api/extract',
   status: (jobId: string) => `/api/status/${jobId}`,
   results: (jobId: string) => `/api/results/${jobId}`,
-  checkout: '/api/checkout',
   gallery: {
     list: '/api/gallery',
     save: '/api/gallery',

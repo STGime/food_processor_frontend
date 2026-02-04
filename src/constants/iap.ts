@@ -1,9 +1,9 @@
 import { Platform } from 'react-native';
 
-export const PREMIUM_PRODUCT_ID = Platform.select({
-  ios: 'com.foodprocessor.premium',
-  android: 'premium_unlock',
-  default: 'premium_unlock',
+export const REVENUECAT_API_KEY = Platform.select({
+  ios: process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_IOS,
+  android: process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID,
+  default: process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID,
 });
 
-export const IAP_PRODUCT_IDS = PREMIUM_PRODUCT_ID ? [PREMIUM_PRODUCT_ID] : [];
+export const ENTITLEMENT_ID = 'premium';

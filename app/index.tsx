@@ -3,12 +3,13 @@ import {
   View,
   Text,
   Image,
-  SafeAreaView,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
+  ScrollView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, layout } from '../src/theme';
@@ -76,28 +77,31 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* App bar */}
+      <View style={styles.appBar}>
+        <Text style={styles.appTitle}>FoodProcessor</Text>
+        <View style={styles.appBarActions}>
+          <TouchableOpacity
+            onPress={() => router.push('/gallery')}
+            style={styles.appBarButton}
+          >
+            <Ionicons name="book-outline" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/settings')}>
+            <Text style={styles.gearIcon}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* App bar */}
-        <View style={styles.appBar}>
-          <Text style={styles.appTitle}>FoodProcessor</Text>
-          <View style={styles.appBarActions}>
-            <TouchableOpacity
-              onPress={() => router.push('/gallery')}
-              style={styles.appBarButton}
-            >
-              <Ionicons name="book-outline" size={24} color={colors.textPrimary} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/settings')}>
-              <Text style={styles.gearIcon}>⚙️</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Content */}
-        <View style={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           {error && <ErrorBanner message={error} />}
 
           <Image
@@ -126,7 +130,7 @@ export default function HomeScreen() {
           <Text style={styles.hint}>
             Tip: In YouTube, tap Share → FoodProcessor to send a video directly.
           </Text>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -164,9 +168,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: layout.pagePadding,
+    paddingBottom: spacing.xl,
   },
   heroImage: {
     width: 180,

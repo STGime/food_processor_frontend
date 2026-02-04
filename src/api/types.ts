@@ -63,11 +63,6 @@ export interface ResultsResponse {
   upgrade_message?: string;
 }
 
-// Checkout
-export interface CheckoutResponse {
-  checkout_url: string;
-}
-
 // Gallery
 export interface GalleryIngredient {
   name: string;
