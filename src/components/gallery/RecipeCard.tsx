@@ -397,6 +397,9 @@ const styles = StyleSheet.create({
   bottomUpsell: {
     backgroundColor: colors.accent,
     paddingVertical: spacing.md,
+    marginBottom: spacing.md,
+    marginHorizontal: spacing.sm,
+    borderRadius: spacing.sm,
     alignItems: 'center',
   },
   bottomUpsellText: {

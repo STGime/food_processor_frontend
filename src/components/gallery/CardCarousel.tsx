@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import Animated, {
+  SharedValue,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
@@ -28,6 +29,57 @@ interface CardCarouselProps {
   onIndexChange: (index: number) => void;
   onDeleteCard: (cardId: string) => void;
   onUpgrade?: () => void;
+}
+
+// Extracted component to properly handle hooks for each card
+interface AnimatedCardWrapperProps {
+  card: GalleryCard;
+  index: number;
+  translateX: SharedValue<number>;
+  isPremium: boolean;
+  onDelete: () => void;
+  onUpgrade?: () => void;
+}
+
+function AnimatedCardWrapper({
+  card,
+  index,
+  translateX,
+  isPremium,
+  onDelete,
+  onUpgrade,
+}: AnimatedCardWrapperProps) {
+  const cardStyle = useAnimatedStyle(() => {
+    const inputRange = [
+      -(index + 1) * SNAP_WIDTH,
+      -index * SNAP_WIDTH,
+      -(index - 1) * SNAP_WIDTH,
+    ];
+    const scale = interpolate(
+      translateX.value,
+      inputRange,
+      [0.92, 1, 0.92],
+      'clamp',
+    );
+    const opacity = interpolate(
+      translateX.value,
+      inputRange,
+      [0.6, 1, 0.6],
+      'clamp',
+    );
+    return { transform: [{ scale }], opacity };
+  });
+
+  return (
+    <Animated.View style={[styles.cardWrapper, cardStyle]}>
+      <RecipeCard
+        card={card}
+        isPremium={isPremium}
+        onDelete={onDelete}
+        onUpgrade={onUpgrade}
+      />
+    </Animated.View>
+  );
 }
 
 export function CardCarousel({
@@ -89,42 +141,17 @@ export function CardCarousel({
     <View style={styles.container}>
       <GestureDetector gesture={gesture}>
         <Animated.View style={[styles.carousel, carouselStyle]}>
-          {cards.map((card, index) => {
-            const cardStyle = useAnimatedStyle(() => {
-              const inputRange = [
-                -(index + 1) * SNAP_WIDTH,
-                -index * SNAP_WIDTH,
-                -(index - 1) * SNAP_WIDTH,
-              ];
-              const scale = interpolate(
-                translateX.value,
-                inputRange,
-                [0.92, 1, 0.92],
-                'clamp',
-              );
-              const opacity = interpolate(
-                translateX.value,
-                inputRange,
-                [0.6, 1, 0.6],
-                'clamp',
-              );
-              return { transform: [{ scale }], opacity };
-            });
-
-            return (
-              <Animated.View
-                key={card.card_id}
-                style={[styles.cardWrapper, cardStyle]}
-              >
-                <RecipeCard
-                  card={card}
-                  isPremium={isPremium}
-                  onDelete={() => onDeleteCard(card.card_id)}
-                  onUpgrade={onUpgrade}
-                />
-              </Animated.View>
-            );
-          })}
+          {cards.map((card, index) => (
+            <AnimatedCardWrapper
+              key={card.card_id}
+              card={card}
+              index={index}
+              translateX={translateX}
+              isPremium={isPremium}
+              onDelete={() => onDeleteCard(card.card_id)}
+              onUpgrade={onUpgrade}
+            />
+          ))}
         </Animated.View>
       </GestureDetector>
 
@@ -145,6 +172,7 @@ const styles = StyleSheet.create({
   cardWrapper: {
     width: CARD_WIDTH,
     marginHorizontal: CARD_MARGIN,
-    paddingVertical: spacing.sm,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xl,
   },
 });

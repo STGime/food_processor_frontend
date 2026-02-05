@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography } from '../src/theme';
 import { useGalleryStore } from '../src/store/galleryStore';
@@ -14,6 +15,7 @@ import { PaywallModal } from '../src/components/PaywallModal';
 type TabType = 'all' | 'favorites';
 
 export default function GalleryScreen() {
+  const insets = useSafeAreaInsets();
   const {
     cards,
     activeIndex,
@@ -140,7 +142,7 @@ export default function GalleryScreen() {
   const showEmptyFavorites = activeTab === 'favorites' && favoriteCards.length === 0;
 
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <GestureHandlerRootView style={[styles.container, { paddingBottom: insets.bottom }]}>
       {/* Tab bar */}
       <View style={styles.tabBar}>
         <TouchableOpacity
