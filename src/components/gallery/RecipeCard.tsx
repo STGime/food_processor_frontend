@@ -23,6 +23,8 @@ import { getIngredientImage } from '../../utils/ingredientEmoji';
 import { ImagePlaceholder } from './ImagePlaceholder';
 import { CardActions } from './CardActions';
 import { FavoriteButton } from './FavoriteButton';
+import { IngredientSwapModal } from '../IngredientSwapModal';
+import { GalleryIngredient } from '../../api/types';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 export const CARD_WIDTH = SCREEN_WIDTH - 96;
@@ -38,6 +40,13 @@ interface RecipeCardProps {
 export function RecipeCard({ card, isPremium, onDelete, onUpgrade }: RecipeCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [instructionsExpanded, setInstructionsExpanded] = useState(false);
+  const [swapModalVisible, setSwapModalVisible] = useState(false);
+  const [selectedIngredient, setSelectedIngredient] = useState<GalleryIngredient | null>(null);
+
+  const handleSwapPress = (ing: GalleryIngredient) => {
+    setSelectedIngredient(ing);
+    setSwapModalVisible(true);
+  };
   const imageOpacity = useSharedValue(0);
   const chevronRotation = useSharedValue(0);
 
@@ -131,7 +140,12 @@ export function RecipeCard({ card, isPremium, onDelete, onUpgrade }: RecipeCardP
           <View key={category} style={styles.categoryGroup}>
             <Text style={styles.categoryHeader}>{category.toUpperCase()}</Text>
             {items.map((ing, i) => (
-              <View key={`${ing.name}-${i}`} style={styles.ingredientRow}>
+              <TouchableOpacity
+                key={`${ing.name}-${i}`}
+                style={styles.ingredientRow}
+                onPress={() => handleSwapPress(ing)}
+                activeOpacity={0.7}
+              >
                 <Image
                   source={getIngredientImage(ing.name, ing.category)}
                   style={styles.ingredientIcon}
@@ -139,12 +153,13 @@ export function RecipeCard({ card, isPremium, onDelete, onUpgrade }: RecipeCardP
                 <Text style={styles.ingredientName} numberOfLines={1}>
                   {ing.name}
                 </Text>
+                <Text style={styles.swapLabel}>Swap</Text>
                 {ing.quantity != null && (
                   <Text style={styles.ingredientQty}>
                     {ing.quantity}{ing.unit ? ` ${ing.unit}` : ''}
                   </Text>
                 )}
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         ))}
@@ -225,6 +240,20 @@ export function RecipeCard({ card, isPremium, onDelete, onUpgrade }: RecipeCardP
           </Text>
         </TouchableOpacity>
       )}
+
+      <IngredientSwapModal
+        visible={swapModalVisible}
+        onClose={() => setSwapModalVisible(false)}
+        ingredientName={selectedIngredient?.name ?? ''}
+        quantity={selectedIngredient?.quantity != null ? String(selectedIngredient.quantity) : undefined}
+        unit={selectedIngredient?.unit ?? undefined}
+        recipeName={card.recipe_name}
+        isPremium={isPremium}
+        onUpgrade={() => {
+          setSwapModalVisible(false);
+          onUpgrade?.();
+        }}
+      />
     </View>
   );
 }
@@ -306,6 +335,12 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textPrimary,
     flex: 1,
+  },
+  swapLabel: {
+    ...typography.small,
+    color: colors.primary,
+    fontWeight: '600',
+    marginLeft: spacing.xs,
   },
   ingredientQty: {
     ...typography.small,

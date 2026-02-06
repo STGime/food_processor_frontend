@@ -8,17 +8,24 @@ interface IngredientCardProps {
   ingredient: Ingredient;
   isChecked: boolean;
   onToggle: () => void;
+  onSwapPress?: () => void;
 }
 
 export function IngredientCard({
   ingredient,
   isChecked,
   onToggle,
+  onSwapPress,
 }: IngredientCardProps) {
   const imageSource = getIngredientImage(ingredient.name, ingredient.category);
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={onSwapPress}
+      activeOpacity={onSwapPress ? 0.7 : 1}
+      disabled={!onSwapPress}
+    >
       <Image source={imageSource} style={styles.image} />
       <View style={styles.info}>
         <Text style={styles.name}>{ingredient.name}</Text>
@@ -30,6 +37,9 @@ export function IngredientCard({
           </Text>
         )}
       </View>
+      {onSwapPress && (
+        <Text style={styles.swapLabel}>Swap</Text>
+      )}
       <TouchableOpacity
         style={[styles.checkbox, isChecked && styles.checkboxChecked]}
         onPress={onToggle}
@@ -38,7 +48,7 @@ export function IngredientCard({
           {isChecked ? 'Have' : 'Need'}
         </Text>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -112,6 +122,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.divider,
     borderRadius: 5,
     marginTop: 4,
+  },
+  swapLabel: {
+    ...typography.small,
+    color: colors.primary,
+    fontWeight: '600',
+    marginRight: spacing.sm,
   },
   checkbox: {
     paddingHorizontal: spacing.md,

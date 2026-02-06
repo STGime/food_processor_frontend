@@ -17,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colors, typography, spacing } from '../theme';
 import { progressMessages } from '../constants/progressMessages';
+import { useExtractionStore } from '../store/extractionStore';
 
 const MESSAGE_ROTATE_INTERVAL = 3000;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -68,25 +69,37 @@ function Marquee() {
 
 export function ProgressIndicator() {
   const [messageIndex, setMessageIndex] = useState(0);
+  const { statusMessage, progress } = useExtractionStore();
 
   useEffect(() => {
+    // Only rotate fallback messages if there's no backend status message
+    if (statusMessage) return;
+
     const interval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % progressMessages.length);
     }, MESSAGE_ROTATE_INTERVAL);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [statusMessage]);
+
+  const displayMessage = statusMessage || progressMessages[messageIndex];
+  const progressPercent = Math.round(progress * 100);
 
   return (
     <View style={styles.container}>
       <Text style={styles.emoji}>🍳</Text>
       <Marquee />
+      {progress > 0 && (
+        <View style={styles.progressBarContainer}>
+          <View style={[styles.progressBar, { width: `${progressPercent}%` }]} />
+        </View>
+      )}
       <ActivityIndicator
         size="large"
         color={colors.primary}
         style={styles.spinner}
       />
-      <Text style={styles.message}>{progressMessages[messageIndex]}</Text>
+      <Text style={styles.message}>{displayMessage}</Text>
     </View>
   );
 }
@@ -125,5 +138,18 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  progressBarContainer: {
+    width: '80%',
+    height: 4,
+    backgroundColor: colors.divider,
+    borderRadius: 2,
+    marginBottom: spacing.lg,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 2,
   },
 });

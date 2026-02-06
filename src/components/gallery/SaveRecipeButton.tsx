@@ -83,6 +83,7 @@ export function SaveRecipeButton({ results }: SaveRecipeButtonProps) {
         recipe_name: results.recipe_name || 'Untitled Recipe',
         video_id: results.video_id,
         ingredients: galleryIngredients,
+        instructions: results.instructions,
         shopping_list: results.shopping_list,
         generate_image: true,
       });

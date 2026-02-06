@@ -50,7 +50,7 @@ export function usePollJobStatus({
         if (!activeRef.current) return;
 
         pollCountRef.current += 1;
-        setStatus(result.status, result.progress);
+        setStatus(result.status, result.progress, result.status_message);
 
         if (result.status === 'completed') {
           stopPolling();

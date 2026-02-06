@@ -18,7 +18,13 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "APP_ENV": "production",
+        "EXPO_PUBLIC_BACKEND_URL": "https://food-processor-551730559911.us-east1.run.app",
+        "EXPO_PUBLIC_REVENUECAT_API_KEY_IOS": "appl_sFCYnDUMSwCSMQYkHwRhxFpsVZc",
+        "EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID": "goog_hdaTxTSbzGrSrZvhcoOoswtRexc"
+      }
     }
   },
   "submit": {

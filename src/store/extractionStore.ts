@@ -11,11 +11,12 @@ interface ExtractionState {
   currentUrl: string | null;
   status: JobStatus | null;
   progress: number;
+  statusMessage: string | null;
   results: ResultsResponse | null;
   error: string | null;
   checkedItems: Set<string>;
   setJob: (jobId: string, url: string) => void;
-  setStatus: (status: JobStatus, progress: number) => void;
+  setStatus: (status: JobStatus, progress: number, statusMessage?: string) => void;
   setResults: (results: ResultsResponse) => void;
   setError: (error: string | null) => void;
   toggleCheckedItem: (ingredientName: string) => void;
@@ -28,6 +29,7 @@ export const useExtractionStore = create<ExtractionState>()((set, get) => ({
   currentUrl: null,
   status: null,
   progress: 0,
+  statusMessage: null,
   results: null,
   error: null,
   checkedItems: new Set<string>(),
@@ -37,11 +39,12 @@ export const useExtractionStore = create<ExtractionState>()((set, get) => ({
       currentUrl: url,
       status: 'queued',
       progress: 0,
+      statusMessage: null,
       results: null,
       error: null,
       checkedItems: new Set(),
     }),
-  setStatus: (status, progress) => set({ status, progress }),
+  setStatus: (status, progress, statusMessage) => set({ status, progress, statusMessage: statusMessage ?? null }),
   setResults: (results) => set({ results, status: 'completed' }),
   setError: (error) => set({ error, status: error ? 'error' : null }),
   toggleCheckedItem: (ingredientName) => {
@@ -63,6 +66,7 @@ export const useExtractionStore = create<ExtractionState>()((set, get) => ({
       currentUrl: null,
       status: null,
       progress: 0,
+      statusMessage: null,
       results: null,
       error: null,
       checkedItems: new Set(),
