@@ -8,31 +8,51 @@ import * as Haptics from 'expo-haptics';
 
 interface CardActionsProps {
   card: GalleryCard;
+  isPremium: boolean;
   onDelete: () => void;
 }
 
-function formatRecipeText(card: GalleryCard): string {
+function formatRecipeText(card: GalleryCard, isPremium: boolean): string {
   let text = `${card.recipe_name}\n\n`;
+
   text += 'Ingredients:\n';
   for (const ing of card.ingredients) {
     const qty = ing.quantity && ing.unit ? `${ing.quantity} ${ing.unit} ` : '';
     text += `  - ${qty}${ing.name}\n`;
   }
-  if (card.is_truncated) {
-    text += `\n  ... and ${card.total_ingredient_count - card.shown_ingredient_count} more (upgrade to see all)\n`;
+
+  if (card.instructions && card.instructions.length > 0) {
+    text += '\nInstructions:\n';
+    for (const step of card.instructions) {
+      text += `  ${step.step_number}. ${step.text}\n`;
+    }
   }
+
+  if (card.is_truncated && !isPremium) {
+    const hiddenIngredients = card.total_ingredient_count - card.shown_ingredient_count;
+    const hiddenSteps = card.total_instruction_count
+      ? card.total_instruction_count - (card.shown_instruction_count || 0)
+      : 0;
+    const parts: string[] = [];
+    if (hiddenIngredients > 0) parts.push(`${hiddenIngredients} ingredients`);
+    if (hiddenSteps > 0) parts.push(`${hiddenSteps} steps`);
+    if (parts.length > 0) {
+      text += `\n  ... and ${parts.join(' and ')} more (upgrade to see all)\n`;
+    }
+  }
+
   return text.trim();
 }
 
-export function CardActions({ card, onDelete }: CardActionsProps) {
+export function CardActions({ card, isPremium, onDelete }: CardActionsProps) {
   const handleCopy = async () => {
-    await copyToClipboard(formatRecipeText(card));
+    await copyToClipboard(formatRecipeText(card, isPremium));
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   const handleShare = async () => {
     try {
-      await Share.share({ message: formatRecipeText(card) });
+      await Share.share({ message: formatRecipeText(card, isPremium) });
     } catch {
       // user cancelled
     }

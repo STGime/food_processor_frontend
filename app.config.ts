@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'FoodProcessor',
   slug: 'food-processor',
-  version: '1.1.1',
+  version: '1.1.2',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'foodprocessor',
@@ -13,6 +13,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.foodprocessor.app',
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
   android: {
     adaptiveIcon: {

@@ -65,31 +65,6 @@ export default function GalleryScreen() {
     }
   }, [activeTab, favoritesIndex, currentIndex]);
 
-  // Fetch cards on mount (refreshes image URLs too)
-  useEffect(() => {
-    async function fetchCards() {
-      setIsLoading(true);
-      try {
-        const data = await listCards(20, 0);
-        setCards(data.cards);
-
-        // Check for any cards without images and poll them
-        for (const card of data.cards) {
-          if (!card.image_url) {
-            pollForImage(card.card_id);
-          }
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load recipes');
-      } finally {
-        setIsLoading(false);
-        setInitialLoad(false);
-      }
-    }
-
-    fetchCards();
-  }, []);
-
   const pollForImage = useCallback(
     (cardId: string) => {
       let attempts = 0;
@@ -113,6 +88,38 @@ export default function GalleryScreen() {
     },
     [updateCardImage],
   );
+
+  const fetchCards = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await listCards(20, 0);
+      setCards(data.cards);
+
+      // Check for any cards without images and poll them
+      for (const card of data.cards) {
+        if (!card.image_url) {
+          pollForImage(card.card_id);
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load recipes');
+    } finally {
+      setIsLoading(false);
+      setInitialLoad(false);
+    }
+  }, [setIsLoading, setCards, setError, pollForImage]);
+
+  // Fetch cards on mount (refreshes image URLs too)
+  useEffect(() => {
+    fetchCards();
+  }, []);
+
+  // Re-fetch cards when premium is recognized but cards still have truncated data
+  useEffect(() => {
+    if (isPremium && cards.some((c) => c.is_truncated)) {
+      fetchCards();
+    }
+  }, [isPremium]);
 
   const handleDelete = useCallback(
     async (cardId: string) => {
@@ -195,6 +202,7 @@ export default function GalleryScreen() {
       <PaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
+        onPurchaseComplete={fetchCards}
       />
     </GestureHandlerRootView>
   );

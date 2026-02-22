@@ -15,12 +15,14 @@ function formatName(raw: string): string {
 interface ShoppingListSectionProps {
   shoppingList: ShoppingListGroup;
   isTruncated: boolean;
+  isPremium: boolean;
   recipeName?: string;
 }
 
 export function ShoppingListSection({
   shoppingList,
   isTruncated,
+  isPremium,
   recipeName,
 }: ShoppingListSectionProps) {
   const { isItemChecked, toggleCheckedItem } = useExtractionStore();
@@ -98,7 +100,7 @@ export function ShoppingListSection({
         </View>
       ))}
 
-      {isTruncated && (
+      {isTruncated && !isPremium && (
         <Text style={styles.truncatedNote}>
           Some ingredients are hidden in the free version. Upgrade to ensure you
           don't miss anything.

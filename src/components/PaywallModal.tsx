@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,10 +12,12 @@ import {
 import { useRouter } from 'expo-router';
 import { colors, typography, spacing, layout } from '../theme';
 import { useIAP, type PlanType } from '../hooks/useIAP';
+import { useDeviceStore } from '../store/deviceStore';
 
 interface PaywallModalProps {
   visible: boolean;
   onClose: () => void;
+  onPurchaseComplete?: () => void;
 }
 
 const features = [
@@ -24,11 +26,20 @@ const features = [
   'Support future improvements to FoodProcessor',
 ];
 
-export function PaywallModal({ visible, onClose }: PaywallModalProps) {
+export function PaywallModal({ visible, onClose, onPurchaseComplete }: PaywallModalProps) {
   const { monthlyPackage, yearlyPackage, purchasing, error, purchase, restore } =
     useIAP();
   const router = useRouter();
+  const isPremium = useDeviceStore((s) => s.isPremium);
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('yearly');
+
+  // Auto-close modal when premium status becomes active
+  useEffect(() => {
+    if (visible && isPremium) {
+      onClose();
+      onPurchaseComplete?.();
+    }
+  }, [visible, isPremium]);
 
   const monthlyPrice = monthlyPackage?.product.priceString ?? null;
   const yearlyPrice = yearlyPackage?.product.priceString ?? null;

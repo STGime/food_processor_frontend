@@ -109,6 +109,8 @@ export function CardCarousel({
   );
 
   const gesture = Gesture.Pan()
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-20, 20])
     .onStart(() => {
       startX.value = translateX.value;
     })

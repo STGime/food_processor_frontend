@@ -29,11 +29,14 @@ export default function HomeScreen() {
   const { setJob } = useExtractionStore();
   const { sharedUrl, clearSharedUrl } = useShareIntent();
 
+  const [sharedConfirm, setSharedConfirm] = useState(false);
+
   // Auto-populate from share intent
   useEffect(() => {
     if (sharedUrl) {
       setUrl(sharedUrl);
       clearSharedUrl();
+      setSharedConfirm(true);
     }
   }, [sharedUrl]);
 
@@ -41,6 +44,7 @@ export default function HomeScreen() {
 
   const handleProcess = async () => {
     setError(null);
+    setSharedConfirm(false);
 
     if (!url.trim()) {
       setError("Please paste a YouTube link.");
@@ -117,8 +121,17 @@ export default function HomeScreen() {
             Paste a YouTube link or share directly from the YouTube app.
           </Text>
 
+          {sharedConfirm && (
+            <View style={styles.sharedConfirm}>
+              <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+              <Text style={styles.sharedConfirmText}>
+                YouTube link received — tap Process to continue
+              </Text>
+            </View>
+          )}
+
           <View style={styles.inputContainer}>
-            <URLInput value={url} onChangeText={setUrl} />
+            <URLInput value={url} onChangeText={(text) => { setUrl(text); setSharedConfirm(false); }} />
           </View>
 
           <ProcessButton
@@ -190,6 +203,22 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.xl,
+  },
+  sharedConfirm: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    backgroundColor: colors.primary + '12',
+    borderRadius: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  sharedConfirmText: {
+    ...typography.small,
+    color: colors.primary,
+    fontWeight: '500',
+    flex: 1,
   },
   inputContainer: {
     marginBottom: spacing.lg,

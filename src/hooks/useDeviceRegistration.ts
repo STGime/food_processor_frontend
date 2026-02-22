@@ -1,29 +1,54 @@
 import { useEffect } from 'react';
-import uuid from 'react-native-uuid';
+import { Platform } from 'react-native';
+import Purchases from 'react-native-purchases';
 import { useDeviceStore } from '../store/deviceStore';
 import { registerDevice, getDeviceMe } from '../api/devices';
 import { apiClient } from '../api/client';
 import { ApiError } from '../api/types';
+import { ENTITLEMENT_ID } from '../constants/iap';
+
+async function checkRevenueCatEntitlement(): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
+  try {
+    const customerInfo = await Purchases.getCustomerInfo();
+    return customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+  } catch {
+    return false;
+  }
+}
 
 export function useDeviceRegistration() {
-  const { deviceId, isRegistered, setDeviceId, setIsRegistered, setIsPremium } =
+  const { deviceId, isRegistered, setIsRegistered, setIsPremium } =
     useDeviceStore();
 
   useEffect(() => {
+    /**
+     * Resolve premium status from backend + RevenueCat.
+     * Premium if EITHER source says so.
+     */
+    function resolvePremium(backendPremium: boolean, rcEntitled: boolean) {
+      setIsPremium(backendPremium || rcEntitled);
+    }
+
     async function forceReRegister(id: string) {
       await apiClient.clearApiKey();
       const response = await registerDevice(id);
-      setIsPremium(response.is_premium);
+      const rcEntitled = await checkRevenueCatEntitlement();
+      resolvePremium(response.is_premium, rcEntitled);
       setIsRegistered(true);
     }
 
     async function register() {
+      // Wait for device_id to be set (generated in _layout.tsx)
+      if (!deviceId) return;
+
       try {
-        if (isRegistered && deviceId) {
+        if (isRegistered) {
           // Already registered, refresh premium status
           try {
             const me = await getDeviceMe();
-            setIsPremium(me.is_premium);
+            const rcEntitled = await checkRevenueCatEntitlement();
+            resolvePremium(me.is_premium, rcEntitled);
             return;
           } catch (error) {
             if (error instanceof ApiError && error.statusCode === 401) {
@@ -35,13 +60,9 @@ export function useDeviceRegistration() {
           }
         }
 
-        const id = deviceId || (uuid.v4() as string);
-        if (!deviceId) {
-          setDeviceId(id);
-        }
-
-        const response = await registerDevice(id);
-        setIsPremium(response.is_premium);
+        const response = await registerDevice(deviceId);
+        const rcEntitled = await checkRevenueCatEntitlement();
+        resolvePremium(response.is_premium, rcEntitled);
         setIsRegistered(true);
       } catch (error) {
         // Silently fail on registration - will retry next launch
@@ -50,5 +71,5 @@ export function useDeviceRegistration() {
     }
 
     register();
-  }, []);
+  }, [deviceId]);
 }

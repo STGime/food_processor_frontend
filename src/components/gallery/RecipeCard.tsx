@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Linking,
 } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
@@ -38,7 +39,6 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ card, isPremium, onDelete, onUpgrade }: RecipeCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [instructionsExpanded, setInstructionsExpanded] = useState(false);
   const [swapModalVisible, setSwapModalVisible] = useState(false);
   const [selectedIngredient, setSelectedIngredient] = useState<GalleryIngredient | null>(null);
@@ -47,17 +47,7 @@ export function RecipeCard({ card, isPremium, onDelete, onUpgrade }: RecipeCardP
     setSelectedIngredient(ing);
     setSwapModalVisible(true);
   };
-  const imageOpacity = useSharedValue(0);
   const chevronRotation = useSharedValue(0);
-
-  const imageAnimStyle = useAnimatedStyle(() => ({
-    opacity: imageOpacity.value,
-  }));
-
-  const handleImageLoad = () => {
-    setImageLoaded(true);
-    imageOpacity.value = withTiming(1, { duration: 400 });
-  };
 
   const toggleInstructions = () => {
     setInstructionsExpanded(!instructionsExpanded);
@@ -93,15 +83,14 @@ export function RecipeCard({ card, isPremium, onDelete, onUpgrade }: RecipeCardP
       {/* Image section */}
       <View style={styles.imageSection}>
         {card.image_url ? (
-          <>
-            {!imageLoaded && <ImagePlaceholder />}
-            <Animated.Image
-              source={{ uri: card.image_url }}
-              style={[styles.image, imageAnimStyle]}
-              resizeMode="cover"
-              onLoad={handleImageLoad}
-            />
-          </>
+          <ExpoImage
+            source={card.image_url}
+            style={styles.image}
+            contentFit="cover"
+            cachePolicy="disk"
+            transition={400}
+            placeholder={undefined}
+          />
         ) : (
           <ImagePlaceholder />
         )}
@@ -193,7 +182,7 @@ export function RecipeCard({ card, isPremium, onDelete, onUpgrade }: RecipeCardP
                     <Text style={styles.instructionText}>{instruction.text}</Text>
                   </View>
                 ))}
-                {card.is_truncated && hiddenInstructionCount > 0 && (
+                {card.is_truncated && !isPremium && hiddenInstructionCount > 0 && (
                   <View style={styles.hiddenStepsRow}>
                     <Text style={styles.hiddenStepsText}>
                       +{hiddenInstructionCount} more steps (Premium)
@@ -205,7 +194,7 @@ export function RecipeCard({ card, isPremium, onDelete, onUpgrade }: RecipeCardP
           </View>
         )}
 
-        {card.is_truncated && (
+        {card.is_truncated && !isPremium && (
           <Animated.View entering={FadeIn.duration(300)} style={styles.upsellCard}>
             <Text style={styles.upsellText}>
               Unlock full recipe
@@ -226,7 +215,7 @@ export function RecipeCard({ card, isPremium, onDelete, onUpgrade }: RecipeCardP
       </ScrollView>
 
       {/* Action bar */}
-      <CardActions card={card} onDelete={onDelete} />
+      <CardActions card={card} isPremium={isPremium} onDelete={onDelete} />
 
       {/* Free user upsell */}
       {!isPremium && onUpgrade && (
