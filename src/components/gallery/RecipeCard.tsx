@@ -3,12 +3,12 @@ import {
   View,
   Text,
   Image,
-  ScrollView,
   StyleSheet,
   Dimensions,
   TouchableOpacity,
   Linking,
 } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
@@ -124,6 +124,7 @@ export function RecipeCard({ card, isPremium, onDelete, onUpgrade }: RecipeCardP
         style={styles.ingredientsSection}
         contentContainerStyle={styles.ingredientsContent}
         showsVerticalScrollIndicator={false}
+        nestedScrollEnabled
       >
         {Object.entries(grouped).map(([category, items]) => (
           <View key={category} style={styles.categoryGroup}>

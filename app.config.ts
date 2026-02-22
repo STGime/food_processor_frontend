@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'FoodProcessor',
   slug: 'food-processor',
-  version: '1.1.2',
+  version: '1.1.3',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'foodprocessor',
